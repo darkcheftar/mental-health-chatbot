@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Window</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='chat.css')}}">
+    <script src="{{url_for('static', filename='socketio.js')}}"></script>
+</head>
+
+<body>
+    {% for message in get_flashed_messages() %}
+    <p class="flash">{{ message }}</p>
+    {% endfor %}
+    <section class="chat__section">
+        <div class="brand">
+            <h1>Chatbot and User</h1>
+        </div>
+        <div class="message__area"></div>
+        <div>
+            <textarea id="textarea" cols="30" rows="1" placeholder="Write a message..."></textarea>
+        </div>
+    </section>
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <script>
+        let name = '{{ current_user.username }}';
+        let socket = io.connect('127.0.0.1:5000');
+        let toName = 'associate';
+        socket.on('connect', (e) => {
+            socket.emit("info", name);
+        })
+        socket.on('info', (e) => {
+            toName = e;
+        })
+        socket.on('pm', (e) => {
+            appendMessage(e, 'outgoing')
+        })
+
+        let messageArea = document.querySelector('.message__area')
+        function sendMessage(message) {
+            let msg = {
+                user: name,
+                message: message.trim(),
+                toName: toName
+            }
+            // Append 
+            appendMessage(msg, 'outgoing')
+            textarea.value = ''
+            scrollToBottom()
+
+            // Send to server 
+            socket.emit('pm', msg)
+        }
+
+        function appendMessage(msg, type) {
+            let mainDiv = document.createElement('div')
+            let className = type
+            mainDiv.classList.add(className, 'message')
+
+            let markup = `
+        <h4>${msg.user}</h4>
+        <p>${msg.message}</p>
+    `
+            mainDiv.innerHTML = markup
+            messageArea.appendChild(mainDiv)
+        }
+        textarea.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage(e.target.value)
+            }
+        })
+        function scrollToBottom() {
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>

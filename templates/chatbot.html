@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat window</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='chat.css')}}">
+    <script src="{{url_for('static', filename='socketio.js')}}"></script>
+</head>
+
+<body>
+
+    <section class="chat__section">
+
+        <div class="brand">
+            <h1>Chatbot and {{ current_user.username }}</h1>
+        </div>
+        <div class="message__area"></div>
+        <div class="options">
+            <span>Not At All</span>
+            <span>Several days</span>
+            <span>More than half of the days</span>
+            <span>Everyday</span>
+            <!-- <textarea id="textarea" cols="30" rows="1" placeholder="Write a message..."></textarea> -->
+        </div>
+    </section>
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <script>
+        let messageArea = document.querySelector('.message__area');
+        let spans = document.querySelectorAll('.options span');
+        let name = '{{ current_user.username }}';
+        let socket = io.connect('127.0.0.1:5000');
+        let qid = 1;
+
+        socket.on('json', e => {
+            console.log(e['q'])
+            appendMessage({ message: e['q'], user: "bot" }, 'incoming')
+            qid = Number.parseInt(e['qid']);
+            scrollToBottom();
+        }
+
+        )
+        socket.on('message', e => {
+            // console.log(e['q'])
+            appendMessage({ message: e, user: "bot" }, 'incoming')
+            scrollToBottom();
+        })
+        socket.on('assessment_complete', e => {
+            appendMessage({ message: e['msg'], user: "bot" }, 'incoming')
+            scrollToBottom();
+            console.log(e)
+            changeopts(e['opts']);
+
+            // alert('assesment complete');
+        })
+        socket.on('redirect', e => {
+            location.pathname = '/logout';
+        })
+        function changeopts(options) {
+            let opts = document.querySelector(".options");
+            opts.innerHTML = "";
+            options.forEach(a => { console.log(a); opts.innerHTML += `<span>${a}</span>` })
+
+        }
+        function send(e) {
+
+            sendMessage(e.target.innerText);
+            scrollToBottom();
+        }
+        document.addEventListener("click", (e) => {
+            if (e.target.tagName == "SPAN")
+                send(e)
+        });
+        function sendMessage(message) {
+            let msg = {
+                user: name,
+                message: message.trim()
+            }
+            // Append 
+            appendMessage(msg, 'outgoing')
+            // textarea.value = ''
+            scrollToBottom()
+
+            // Send to server 
+            console.log(qid, qid + 1);
+
+
+            socket.emit('next_event', { 'id': (qid + 1).toString(), 'score': msg['message'] })
+
+        }
+
+        function appendMessage(msg, type) {
+            let mainDiv = document.createElement('div')
+            let className = type
+            mainDiv.classList.add(className, 'message')
+
+            let markup = `
+        <h4>${msg.user}</h4>
+        <p>${msg.message}</p>
+    `
+            mainDiv.innerHTML = markup
+            messageArea.appendChild(mainDiv)
+        }
+        // textarea.addEventListener('keyup', (e) => {
+        //     if (e.key === 'Enter') {
+        //         sendMessage(e.target.value)
+        //     }
+        // })
+        function scrollToBottom() {
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
