@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request,flash, redirect, session
 from app import User, db
+import chat
 from flask_login import login_user, current_user, logout_user
 assoclog = Blueprint('assoclog', __name__, template_folder="templates", static_folder="static",url_prefix='/associate')
 
@@ -21,7 +22,7 @@ def login():
                 # session["CUser"] = user.username
                 login_user(user)
                 # print(current_user,"hi")
-                return render_template('chat.html')
+                return redirect('chat')
             else:
                 flash('Wrong password or username')
                 return redirect('login')
@@ -53,3 +54,10 @@ def register():
 @assoclog.route('/')
 def home():
     return render_template('assoclanding.html')
+
+    
+@assoclog.route('/logout', methods=["GET", "POST"])
+def logout():
+    if request.method == "POST":
+        logout_user()
+    return render_template('assoclogin.html')

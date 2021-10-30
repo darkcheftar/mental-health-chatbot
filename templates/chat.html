@@ -15,7 +15,7 @@
     {% endfor %}
     <section class="chat__section">
         <div class="brand">
-            <h1>Chatbot and User</h1>
+            <h1>Associate and User</h1>
         </div>
         <div class="message__area"></div>
         <div>
@@ -34,7 +34,9 @@
             toName = e;
         })
         socket.on('pm', (e) => {
-            appendMessage(e, 'outgoing')
+            appendMessage(e, 'incoming')
+            scrollToBottom()
+
         })
 
         let messageArea = document.querySelector('.message__area')

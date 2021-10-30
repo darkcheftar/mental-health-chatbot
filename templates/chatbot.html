@@ -30,7 +30,7 @@
         let messageArea = document.querySelector('.message__area');
         let spans = document.querySelectorAll('.options span');
         let name = '{{ current_user.username }}';
-        let socket = io.connect('127.0.0.1:5000');
+        let socket = io.connect(location.host);
         let qid = 1;
 
         socket.on('json', e => {
@@ -55,7 +55,7 @@
             // alert('assesment complete');
         })
         socket.on('redirect', e => {
-            location.pathname = '/logout';
+            location.pathname = `/${e}`;
         })
         function changeopts(options) {
             let opts = document.querySelector(".options");

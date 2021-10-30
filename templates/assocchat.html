@@ -15,7 +15,7 @@
     {% endfor %}
     <section class="chat__section">
         <div class="brand">
-            <h1>Chatbot and User</h1>
+            <h1>Associate and User</h1>
         </div>
         <div class="message__area"></div>
         <div>
@@ -27,15 +27,18 @@
         let messageArea = document.querySelector('.message__area')
         let name = '{{ current_user.username }}';
         let socket = io.connect('127.0.0.1:5000');
+
         let toName = 'user';
         socket.on('connect', (e) => {
             socket.emit("info", name);
-        })
-        socket.on('info', (e) => {
-            toName = e;
-        })
+        }),
+            socket.on('info', (e) => {
+                toName = e;
+            })
         socket.on('pm', (e) => {
-            appendMessage(e, 'outgoing')
+            appendMessage(e, 'incoming')
+            scrollToBottom()
+
         })
         function sendMessage(message) {
             let msg = {

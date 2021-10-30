@@ -44,6 +44,7 @@ def botreply(d):
     if d['score'] in [ "Thanks and Logout", "No Thanks and logout"]:
         socketio.emit("redirect", "logout")
     elif d['score'] == "Yes, Please":
+        socketio.emit("redirect", "chat")
         socketio.emit("associate", "associateid")
     else:
         user[current_user.username]+=score[d['score']]
@@ -56,13 +57,31 @@ def botreply(d):
             msg = "According to your replies I recommend you some Articlas which will help you feel better. which will be sent to your registered email!"
             opts = ["Thanks and Logout"]
         elif 9 < cScore <= 18:
-            msg = "According to your replies I recommend you some Articlas which will help you feel better. I feel you need some human assesstance please give you consent to let you connect with our Associate"
+            msg = "According to your replies I recommend you some Articlas which will help you feel better. I feel you need some human assistance please give your consent to let you connect with our Associate"
             opts = ["Yes, Please", "No Thanks and logout"]
         else:
-            msg = "According to your replies I strongly recommend you to meet out Human associate which may help you feel better. please give you consent to let you connect with our Associate"
+            msg = "According to your replies I strongly recommend you to meet out Company associate which will help you feel better. please give you consent to let you connect with our Associate"
             opts = ["Yes, Please", "No Thanks and logout"]
         socketio.emit("assessment_complete", {"msg":msg, "opts":opts} )
 
 @socketio.on('info')
 def info(e):
-    pass
+    print(e)
+    if not current_user.isAssociate:
+        if associateids:
+            assoc = list(associateids.keys())[0]
+            print(assoc,"hi")
+            socketio.emit("info", assoc, room=request.sid)
+            socketio.emit("info", current_user.username, room=associateids[assoc])
+
+@socketio.on('pm')
+def pm(e):
+    if e['toName'] and e['toName']!="associate":
+        if current_user.isAssociate:
+            socketio.emit("pm", e, room=userids[e['toName']])
+        else:
+            socketio.emit("pm", e, room=associateids[e['toName']])
+    else:
+        pass
+        print("left")
+        # TODO Error person left

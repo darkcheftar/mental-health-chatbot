@@ -12,3 +12,8 @@ def chatbot():
 @login_required
 def chatNormal():
     return render_template('chat.html')
+
+@chat.route('/associate/chat')
+@login_required
+def chatNormalAssoc():
+    return render_template('assocchat.html')
